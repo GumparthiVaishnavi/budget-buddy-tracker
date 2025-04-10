@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Budget Buddy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Budget Buddy</h1>
+    </header>
+
+    <main>
+        <section class="form-section">
+            <h2>Log Expense</h2>
+            <form id="expenseForm">
+                <input type="text" placeholder="Category" name="tag" required>
+                <input type="number" placeholder="Amount" name="cost" required>
+                <input type="date" name="date" required>
+                <button type="submit">Add Expense</button>
+            </form>
+        </section>
+
+        <section class="form-section">
+            <h2>Set Budget</h2>
+            <form id="budgetForm">
+                <input type="text" placeholder="Category" name="tag" required>
+                <input type="text" placeholder="Month (YYYY-MM)" name="month" required>
+                <input type="number" placeholder="Amount" name="amount" required>
+                <button type="submit">Set Budget</button>
+            </form>
+        </section>
+
+        <section class="form-section">
+            <h2>Monthly Report</h2>
+            <form id="reportForm">
+                <input type="text" placeholder="Month (YYYY-MM)" name="month" required>
+                <button type="submit">Get Report</button>
+            </form>
+            <div id="reportOutput"></div>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById("expenseForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            const res = await fetch('/add_expense', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            alert("Expense logged!");
+            e.target.reset();
+        });
+
+        document.getElementById("budgetForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            const res = await fetch('/set_budget', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            alert("Budget set!");
+            e.target.reset();
+        });
+
+        document.getElementById("reportForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const month = e.target.month.value;
+            const res = await fetch(`/report/${month}`);
+            const data = await res.json();
+            const output = data.map(d => 
+                `<p><strong>${d.tag}</strong>: ₹${d.used} / ₹${d.budget} — ${d.status}</p>`
+            ).join("");
+            document.getElementById("reportOutput").innerHTML = output;
+        });
+    </script>
+</body>
+</html>
